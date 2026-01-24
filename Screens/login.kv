@@ -7,7 +7,7 @@
 
     # Background image
     Image:
-        source: 'Login.png'
+        source: 'Assets/Login.png'
         size_hint: 1, 1
         pos_hint: {'x': 0, 'y': 0}
         allow_stretch: True
@@ -39,7 +39,7 @@
                 Rectangle:
                     pos: self.pos
                     size: self.size
-                    source: 'GreenGradient.png'
+                    source: 'Assets/GreenGradient.png'
 
     # Bottom green gradient (placed before card so card can appear on top when overlapping)
     Widget:
@@ -51,7 +51,7 @@
             Rectangle:
                 pos: self.pos
                 size: self.size
-                source: 'GreenGradient.png'
+                source: 'Assets/GreenGradient.png'
 
     # Main content card
     BoxLayout:
@@ -144,7 +144,7 @@
                         Rectangle:
                             pos: self.pos
                             size: self.size
-                            source: 'GreenGradient.png'
+                            source: 'Assets/GreenGradient.png'
                     color: 1,1,1,1
                     on_release: root.on_login_pressed()
 

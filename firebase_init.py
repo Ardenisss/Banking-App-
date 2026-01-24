@@ -5,7 +5,7 @@ API_KEY = "AIzaSyBibUysdkGMVAdVbU6z9ovdMMlToEq0D0o"
 # ---------------- Create a new user ----------------
 def register_user(email, password):
     url = f"https://identitytoolkit.googleapis.com/v1/accounts:signUp?key={API_KEY}"
-    payload = {
+    payload = { 
         "email": email,
         "password": password,
         "returnSecureToken": True  

@@ -9,7 +9,7 @@
     back_btn: back_btn
 
     Image:
-        source: 'Login.png'
+        source: 'Assets/Login.png'
         size_hint: 1, 1
         pos_hint: {'x': 0, 'y': 0}
         allow_stretch: True
@@ -38,7 +38,7 @@
                 Rectangle:
                     pos: self.pos
                     size: self.size
-                    source: 'GreenGradient.png'
+                    source: 'Assets/GreenGradient.png'
 
     Widget:
         size_hint_y: None
@@ -48,7 +48,7 @@
             Rectangle:
                 pos: self.pos
                 size: self.size
-                source: 'GreenGradient.png'
+                source: 'Assets/GreenGradient.png'
 
     # Register card (same dimensions & style as login card)
     BoxLayout:
@@ -166,7 +166,7 @@
                     Rectangle:
                         pos: self.pos
                         size: self.size
-                        source: 'GreenGradient.png'
+                        source: 'Assets/GreenGradient.png'
                 color: 1,1,1,1
                 on_release:
                     # optionally call a Python handler (if you have one)
@@ -190,7 +190,7 @@
                 Rectangle:
                     pos: self.pos
                     size: self.size
-                    source: 'GreenGradient.png'
+                    source: 'Assets/GreenGradient.png'
 
         # White card container (positioned towards the top; size_hint scales with screen)
         BoxLayout:
@@ -468,4 +468,4 @@
                 Rectangle:
                     pos: self.pos
                     size: self.size
-                    source: 'GreenGradient.png'
+                    source: 'Assets/GreenGradient.png'
