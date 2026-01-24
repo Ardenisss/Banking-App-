@@ -1,0 +1,184 @@
+<LoginScreen>:
+    username_input: username
+    password_input: password
+    login_btn: login_btn
+    forgot_btn: forgot_btn
+    register_btn: register_btn
+
+    # Background image
+    Image:
+        source: 'Login.png'
+        size_hint: 1, 1
+        pos_hint: {'x': 0, 'y': 0}
+        allow_stretch: True
+        keep_ratio: True
+
+    # Top bars
+    BoxLayout:
+        orientation: 'vertical'
+        size_hint_y: None
+        height: dp(130)
+        pos_hint: {'top': 1}
+
+        # White bar
+        Widget:
+            size_hint_y: None
+            height: dp(50)
+            canvas:
+                Color:
+                    rgba: 1, 1, 1, 1
+                Rectangle:
+                    pos: self.pos
+                    size: self.size
+
+        # Green gradient bar
+        Widget:
+            size_hint_y: None
+            height: dp(80)
+            canvas:
+                Rectangle:
+                    pos: self.pos
+                    size: self.size
+                    source: 'GreenGradient.png'
+
+    # Bottom green gradient (placed before card so card can appear on top when overlapping)
+    Widget:
+        id: bottom_bar
+        size_hint_y: None
+        height: dp(200)
+        pos_hint: {'y': 0}
+        canvas:
+            Rectangle:
+                pos: self.pos
+                size: self.size
+                source: 'GreenGradient.png'
+
+    # Main content card
+    BoxLayout:
+        size_hint: None, None
+        width: dp(420)
+        height: dp(360)
+        pos_hint: {'center_x': 0.5, 'center_y': 0.5}
+        orientation: 'vertical'
+        padding: dp(20)
+        spacing: dp(14)
+
+        # Card background with shadow
+        canvas.before:
+            Color:
+                rgba: 0, 0, 0, 0.18
+            RoundedRectangle:
+                pos: (self.x + dp(0), self.y - dp(6))
+                size: (self.width, self.height + dp(6))
+                radius: [12,]
+            Color:
+                rgba: 1, 1, 1, 0.98
+            RoundedRectangle:
+                pos: self.pos
+                size: self.size
+                radius: [10,]
+
+        # Username label + input
+        BoxLayout:
+            orientation: 'vertical'
+            size_hint_y: None
+            height: dp(78)
+            spacing: dp(6)
+
+            Label:
+                text: 'Username'
+                size_hint_y: None
+                height: dp(18)
+                color: 0, 0, 0, 1
+                halign: 'left'
+                valign: 'middle'
+                text_size: self.size
+
+            TextInput:
+                id: username
+                size_hint_y: None
+                height: dp(48)
+                multiline: False
+
+        # Password label + input
+        BoxLayout:
+            orientation: 'vertical'
+            size_hint_y: None
+            height: dp(78)
+            spacing: dp(6)
+
+            Label:
+                text: 'Password'
+                size_hint_y: None
+                height: dp(18)
+                color: 0, 0, 0, 1
+                halign: 'left'
+                valign: 'middle'
+                text_size: self.size
+
+            TextInput:
+                id: password
+                size_hint_y: None
+                height: dp(48)
+                multiline: False
+                password: True
+
+        # Actions row
+        BoxLayout:
+            size_hint_y: None
+            height: dp(92)
+            spacing: dp(12)
+
+            # Left column
+            BoxLayout:
+                orientation: 'vertical'
+                size_hint_x: 0.5
+                spacing: dp(8)
+
+                Button:
+                    id: login_btn
+                    text: 'Log in'
+                    size_hint_y: None
+                    height: dp(48)
+                    canvas.before:
+                        Rectangle:
+                            pos: self.pos
+                            size: self.size
+                            source: 'GreenGradient.png'
+                    color: 1,1,1,1
+                    on_release: root.on_login_pressed()
+
+                HoverLabel:
+                    id: forgot_btn
+                    text: 'Forgot password?'
+                    size_hint_y: None
+                    height: dp(24)
+                    normal_color: 0, 0.45, 0, 1  # default green
+                    hover_color: 0.0, 0.6, 0.0, 1  # brighter green on hover
+                    halign: 'center'
+                    valign: 'middle'
+                    text_size: self.size
+                    on_touch_down:
+                        if self.collide_point(*args[1].pos): root.on_forgot_pressed()
+
+            # Right column
+            BoxLayout:
+                orientation: 'vertical'
+                size_hint_x: 0.5
+
+                HoverButton:
+                    id: register_btn
+                    text: 'Register'
+                    size_hint: None, None
+                    size: (dp(100), dp(36))
+                    pos_hint: {'center_x': 0.5, 'center_y': 0.5}
+                    normal_color: 0, 0.45, 0, 1      # text color when not hovered
+                    hover_color: 0, 0.7, 0, 1        # text color on hover
+                    canvas.before:
+                        Color:
+                            rgba: 0, 0, 0, 0
+                        Rectangle:
+                            pos: self.pos
+                            size: self.size
+                    # switch directly to the register screen
+                    on_release: root.manager.current = 'register'

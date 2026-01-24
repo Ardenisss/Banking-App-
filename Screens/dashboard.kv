@@ -1,0 +1,335 @@
+<DashboardScreen>:
+    FloatLayout:
+
+        # 1. Bottom green gradient (Background)
+        Widget:
+            size_hint: 1, None
+            height: dp(200)
+            pos_hint: {'y': 0}
+            canvas:
+                Rectangle:
+                    pos: self.pos
+                    size: self.size
+                    source: 'GreenGradient.png'
+
+        # 2. White Card Container
+        BoxLayout:
+            id: dashboard_card
+            orientation: 'vertical'
+            size_hint: 1, 0.78  # Width 90%, Height 78%
+            pos_hint: {'center_x': .5, 'top': .86}
+            padding: 0
+            spacing: dp(12)
+
+            canvas.before:
+                Color:
+                    rgba: 1, 1, 1, 1
+                RoundedRectangle:
+                    pos: self.pos
+                    size: self.size
+                    radius: [0,]
+                Color:
+                    rgba: 0, 0, 0, 0.06
+                RoundedRectangle:
+                    pos: (self.x, self.y - dp(6))
+                    size: (self.width, self.height + dp(6))
+                    radius: [0,]
+
+            # --- GREETING SECTION ---
+            # Fixed: size_hint_x defaults to 1 so it spans the full width
+            Label:
+                text: 'Good Morning!'
+                color: 0, 0.45, 0, 1
+                font_size: dp(28)
+                size_hint_y: None
+                height: dp(50) 
+                
+                # This fixes the "one column" issue by forcing text bounds to widget width
+                text_size: self.size 
+                halign: 'left'
+                valign: 'bottom'
+                padding: [dp(20), 0] # Left padding inside the label
+
+            # --- SUBTITLE & TOTAL BALANCE ---
+            BoxLayout:
+                size_hint_y: None
+                height: dp(24)
+                spacing: dp(8)
+                padding: [dp(20), 0, dp(20), 0]
+
+                Label:
+                    text: 'personal banking accounts'
+                    font_size: dp(14)
+                    color: .5, .5, .5, 1
+                    halign: 'left'
+                    valign: 'middle'
+                    text_size: self.size
+
+                Label:
+                    id: user_balance
+                    text: '$5,432.10'
+                    font_size: dp(14)
+                    color: .5, .5, .5, 1
+                    halign: 'right'
+                    valign: 'middle'
+                    text_size: self.size
+
+            # --- BANK CARDS AREA ---
+            BoxLayout:
+                size_hint_y: None
+                height: dp(120)
+                spacing: dp(12)
+                padding: [dp(20), 0, dp(20), 0]
+
+                # Checking Card
+                BoxLayout:
+                    orientation: 'vertical'
+                    padding: dp(12)
+                    spacing: dp(6)
+                    size_hint_x: 0.5
+
+                    canvas.before:
+                        Color:
+                            rgba: 1, 1, 1, 1
+                        RoundedRectangle:
+                            pos: self.pos
+                            size: self.size
+                            radius: [10,]
+                        # Shadow
+                        Color:
+                            rgba: 0, 0, 0, 0.06
+                        RoundedRectangle:
+                            pos: (self.x, self.y - dp(4))
+                            size: (self.width, self.height + dp(4))
+                            radius: [10,]
+                        # Border
+                        Color:
+                            rgba: 0, 0.45, 0, 0.3
+                        Line:
+                            rounded_rectangle: (self.x, self.y, self.width, self.height, 10)
+                            width: 1.5
+                        Color:
+                            rgba: 0, 0.45, 0, 0.15
+                        Line:
+                            rounded_rectangle: (self.x + 1, self.y + 1, self.width - 2, self.height - 2, 10)
+                            width: 1
+
+                    BoxLayout:
+                        size_hint_y: None
+                        height: dp(28)
+                        spacing: dp(8)
+
+                        Label:
+                            id: checking_balance
+                            text: '$1,234.56'
+                            font_size: dp(16)
+                            color: 0, 0, 0, 1
+                            halign: 'left'
+                            valign: 'middle'
+                            text_size: self.size
+
+                        Label:
+                            text: 'Checking Account'
+                            font_size: dp(16)
+                            color: 0, 0, 0, 1
+                            halign: 'right'
+                            valign: 'middle'
+                            text_size: self.size
+
+                    Label:
+                        text: 'Available balance'
+                        font_size: dp(12)
+                        color: .6, .6, .6, 1
+                        size_hint_y: None
+                        height: dp(18)
+                        halign: 'left'
+                        valign: 'middle'
+                        text_size: self.size
+
+                # Savings Card
+                BoxLayout:
+                    orientation: 'vertical'
+                    padding: dp(12)
+                    spacing: dp(6)
+                    size_hint_x: 0.5
+
+                    canvas.before:
+                        Color:
+                            rgba: 1, 1, 1, 1
+                        RoundedRectangle:
+                            pos: self.pos
+                            size: self.size
+                            radius: [10,]
+                        Color:
+                            rgba: 0, 0, 0, 0.06
+                        RoundedRectangle:
+                            pos: (self.x, self.y - dp(4))
+                            size: (self.width, self.height + dp(4))
+                            radius: [10,]
+                        Color:
+                            rgba: 0, 0.45, 0, 0.3
+                        Line:
+                            rounded_rectangle: (self.x, self.y, self.width, self.height, 10)
+                            width: 1.5
+                        Color:
+                            rgba: 0, 0.45, 0, 0.15
+                        Line:
+                            rounded_rectangle: (self.x + 1, self.y + 1, self.width - 2, self.height - 2, 10)
+                            width: 1
+
+                    BoxLayout:
+                        size_hint_y: None
+                        height: dp(28)
+                        spacing: dp(8)
+
+                        Label:
+                            id: savings_balance
+                            text: '$3,210.54'
+                            font_size: dp(16)
+                            color: 0, 0, 0, 1
+                            halign: 'left'
+                            valign: 'middle'
+                            text_size: self.size
+
+                        Label:
+                            text: 'Savings Account'
+                            font_size: dp(16)
+                            color: 0, 0, 0, 1
+                            halign: 'right'
+                            valign: 'middle'
+                            text_size: self.size
+
+                    Label:
+                        text: 'Available balance'
+                        font_size: dp(12)
+                        color: .6, .6, .6, 1
+                        size_hint_y: None
+                        height: dp(18)
+                        halign: 'left'
+                        valign: 'middle'
+                        text_size: self.size
+
+            # --- ACTION BUTTONS (With Flash & Borders) ---
+            BoxLayout: 
+                spacing: dp(12)
+                padding: [dp(20), dp(10), dp(20), dp(20)]
+                
+                # 1. Statements
+                BoxLayout:
+                    orientation: 'vertical'
+                    spacing: dp(5)
+                    
+                    Button:
+                        id: btn_statements
+                        size_hint: None, None
+                        size: dp(50), dp(50)
+                        pos_hint: {'center_x': 0.5}
+                        background_normal: ''
+                        background_color: 0,0,0,0
+                        on_release: print("statements")
+                        
+                        canvas.before:
+                            Color:
+                                # Flash green when pressed, else light grey
+                                rgba: (0, 0.6, 0, 0.2) if self.state == 'down' else (.96, .96, .96, 1)
+                            RoundedRectangle:
+                                pos: self.pos
+                                size: self.size
+                                radius: [12,]
+                                source: 'statment.png'
+                            Color:
+                                rgba: 0.7, 0.7, 0.7, 1 # Grey border
+                            Line:
+                                rounded_rectangle: (self.x, self.y, self.width, self.height, 12)
+                                width: 1
+
+                    Label:
+                        text: 'Statements'
+                        color: 0, 0.45, 0, 1
+                        font_size: dp(12)
+                        halign: 'center'
+                        valign: 'top'
+                        text_size: self.size
+
+                # 2. Manage Cards
+                BoxLayout:
+                    orientation: 'vertical'
+                    spacing: dp(5)
+                    
+                    Button:
+                        id: btn_manage_cards
+                        size_hint: None, None
+                        size: dp(50), dp(50)
+                        pos_hint: {'center_x': 0.5}
+                        background_normal: ''
+                        background_color: 0,0,0,0
+                        on_release: print("manage cards")
+                        
+                        canvas.before:
+                            Color:
+                                rgba: (0, 0.6, 0, 0.2) if self.state == 'down' else (.96, .96, .96, 1)
+                            RoundedRectangle:
+                                pos: self.pos
+                                size: self.size
+                                radius: [12,]
+                                source: 'cards.png'
+                            Color:
+                                rgba: 0.7, 0.7, 0.7, 1
+                            Line:
+                                rounded_rectangle: (self.x, self.y, self.width, self.height, 12)
+                                width: 1
+
+                    Label:
+                        text: 'Manage\nCards'
+                        color: 0, 0.45, 0, 1
+                        font_size: dp(12)
+                        halign: 'center'
+                        valign: 'top'
+                        text_size: self.size
+
+                # 3. Explore
+                BoxLayout:
+                    orientation: 'vertical'
+                    spacing: dp(5)
+                    
+                    Button:
+                        id: btn_explore
+                        size_hint: None, None
+                        size: dp(50), dp(50)
+                        pos_hint: {'center_x': 0.5}
+                        background_normal: ''
+                        background_color: 0,0,0,0
+                        on_release: print("explore")
+                        
+                        canvas.before:
+                            Color:
+                                rgba: (0, 0.6, 0, 0.2) if self.state == 'down' else (.96, .96, .96, 1)
+                            RoundedRectangle:
+                                pos: self.pos
+                                size: self.size
+                                radius: [12,]
+                                source: 'explore.png'
+                            Color:
+                                rgba: 0.7, 0.7, 0.7, 1
+                            Line:
+                                rounded_rectangle: (self.x, self.y, self.width, self.height, 12)
+                                width: 1
+
+                    Label:
+                        text: 'Explore\nProducts'
+                        color: 0, 0.45, 0, 1
+                        font_size: dp(12)
+                        halign: 'center'
+                        valign: 'top'
+                        text_size: self.size
+
+        # 3. Top Gradient (Overlap effect)
+        Widget:
+            size_hint_y: None
+            height: dp(80)
+            pos_hint: {'top': 1}
+            canvas:
+                Rectangle:
+                    pos: self.pos
+                    size: self.size
+                    source: 'GreenGradient.png'
