@@ -7,7 +7,7 @@ from kivy.properties import ListProperty
 
 class HoverMixin:
     normal_color = ListProperty([0, 0.45, 0, 1])  # default
-    hover_color = ListProperty([1, 0, 0, 1])      # on-hover (red)
+    hover_color = ListProperty([0, 0.6, 0, 1])    # on-hover (darker green)
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)

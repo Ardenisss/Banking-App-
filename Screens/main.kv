@@ -1,5 +1,7 @@
+#:include Screens/auth_background.kv
 #:include Screens/login.kv
 #:include Screens/register.kv
+#:include Screens/reset_password.kv
 #:include Screens/dashboard.kv
 
 ScreenManager:
@@ -8,5 +10,7 @@ ScreenManager:
         name: 'login'
     RegisterScreen:
         name: 'register'
+    PasswordResetScreen:
+        name: 'reset_password'
     DashboardScreen:
         name: 'dashboard'
