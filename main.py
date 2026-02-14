@@ -12,6 +12,7 @@ from hover import HoverLabel
 from firebase_init import register_user, login_user, reset_password, create_user_document
 
 
+
 class AuthBackground(FloatLayout):
     """Shared background component for login and register screens."""
     pass
@@ -73,15 +74,22 @@ class LoginScreen(AuthScreen):
             return
         
         try:
-            user = login_user(email, pw)
-            if user:
+            response = login_user(email, pw)
+            
+            # Check if login succeeded
+            if "idToken" in response:
+                user = response
                 app = App.get_running_app()
                 app.current_user = user
                 app.current_user_id = user.get('localId')
                 app.current_id_token = user.get('idToken')
                 self.manager.current = 'dashboard'
+            # Check if there's an error in the response
+            elif "error" in response:
+                error_msg = response.get("error", {}).get("message", "Invalid email or password")
+                self.show_error(error_msg)
             else:
-                self.show_error("Invalid email or password")
+                self.show_error("Login failed")
         except Exception as e:
             self.show_error(f"Error: {str(e)}")
 
@@ -122,8 +130,11 @@ class RegisterScreen(AuthScreen):
             return
 
         try:
-            user = register_user(email, pw)
-            if user:
+            response = register_user(email, pw)
+            
+            # Check if registration succeeded
+            if "idToken" in response:
+                user = response
                 uid = user.get('localId')
                 id_token = user.get('idToken')
                 
@@ -138,6 +149,10 @@ class RegisterScreen(AuthScreen):
                     self.manager.current = 'dashboard'
                 else:
                     self.show_error("Failed to create user profile")
+            # Check if there's an error in the response
+            elif "error" in response:
+                error_msg = response.get("error", {}).get("message", "Registration failed")
+                self.show_error(error_msg)
             else:
                 self.show_error("Registration failed")
         except Exception as e:

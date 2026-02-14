@@ -15,7 +15,8 @@ def register_user(email, password):
     if "idToken" in data:
         return data
     else:
-        return None
+        # Return the full response so caller can see the error
+        return data
 
 def login_user(email, password):
     url = f"https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword?key={API_KEY}"
@@ -27,7 +28,8 @@ def login_user(email, password):
     if "idToken" in data:
         return data
     else:
-        return None
+        # Return the full response so caller can see the error
+        return data
 
 def reset_password(email):
     url = f"https://identitytoolkit.googleapis.com/v1/accounts:sendOobCode?key={API_KEY}"
