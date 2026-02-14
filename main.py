@@ -9,7 +9,7 @@ from kivy.clock import Clock
 from kivy.metrics import dp
 
 from hover import HoverLabel
-from firebase_init import register_user, login_user, reset_password
+from firebase_init import register_user, login_user, reset_password, create_user_document
 
 
 class AuthBackground(FloatLayout):
@@ -17,14 +17,27 @@ class AuthBackground(FloatLayout):
     pass
 
 
-class LoginScreen(Screen):
-    """User login interface with email and password validation."""
-    username_input = ObjectProperty(None)
-    password_input = ObjectProperty(None)
-    login_btn = ObjectProperty(None)
-    forgot_btn = ObjectProperty(None)
-    register_btn = ObjectProperty(None)
+# -------- Helper Functions --------
+def get_input_text(input_widget):
+    """Safely retrieve text from input widget."""
+    return input_widget.text if input_widget else ""
 
+
+def validate_password_strength(password):
+    """Validate password meets security requirements."""
+    if len(password) < 8:
+        return False, "Password must be at least 8 characters long"
+    if not any(char.isdigit() for char in password):
+        return False, "Password must contain at least one number"
+    if not any(char.isupper() for char in password):
+        return False, "Password must contain at least one uppercase letter"
+    return True, ""
+
+
+# -------- Base Screen Class --------
+class AuthScreen(Screen):
+    """Base class for authentication screens with shared error handling."""
+    
     def show_error(self, message):
         """Display error notification."""
         error_box = self.ids.error_box
@@ -41,10 +54,19 @@ class LoginScreen(Screen):
         anim = Animation(height=0, duration=0.3)
         anim.start(error_box)
 
+
+class LoginScreen(AuthScreen):
+    """User login interface with email and password validation."""
+    username_input = ObjectProperty(None)
+    password_input = ObjectProperty(None)
+    login_btn = ObjectProperty(None)
+    forgot_btn = ObjectProperty(None)
+    register_btn = ObjectProperty(None)
+
     def on_login_pressed(self):
         """Handle login button press with Firebase authentication."""
-        email = self.username_input.text if self.username_input else ""
-        pw = self.password_input.text if self.password_input else ""
+        email = get_input_text(self.username_input)
+        pw = get_input_text(self.password_input)
         
         if not email or not pw:
             self.show_error("Please enter both email and password")
@@ -53,7 +75,10 @@ class LoginScreen(Screen):
         try:
             user = login_user(email, pw)
             if user:
-                App.get_running_app().current_user = user
+                app = App.get_running_app()
+                app.current_user = user
+                app.current_user_id = user.get('localId')
+                app.current_id_token = user.get('idToken')
                 self.manager.current = 'dashboard'
             else:
                 self.show_error("Invalid email or password")
@@ -69,7 +94,7 @@ class LoginScreen(Screen):
         self.manager.current = 'register'
 
 
-class RegisterScreen(Screen):
+class RegisterScreen(AuthScreen):
     """User registration interface with password validation."""
     new_username_input = ObjectProperty(None)
     new_password_input = ObjectProperty(None)
@@ -77,45 +102,19 @@ class RegisterScreen(Screen):
     submit_btn = ObjectProperty(None)
     back_btn = ObjectProperty(None)
 
-    def is_password_weak(self, password):
-        """Validate password strength (8+ chars, 1 number, 1 uppercase)."""
-        if len(password) < 8:
-            return True, "Password must be at least 8 characters long"
-        if not any(char.isdigit() for char in password):
-            return True, "Password must contain at least one number"
-        if not any(char.isupper() for char in password):
-            return True, "Password must contain at least one uppercase letter"
-        return False, ""
-
-    def show_error(self, message):
-        """Display error notification."""
-        error_box = self.ids.error_box
-        error_message = self.ids.error_message
-        error_message.text = message
-        
-        anim = Animation(height=dp(60), duration=0.3)
-        anim.start(error_box)
-        Clock.schedule_once(self.hide_error, 4)
-    
-    def hide_error(self, dt=None):
-        """Hide error notification."""
-        error_box = self.ids.error_box
-        anim = Animation(height=0, duration=0.3)
-        anim.start(error_box)
-
     def on_register_submit(self):
         """Handle registration with validation and Firebase."""
-        email = self.new_username_input.text if self.new_username_input else ""
-        pw = self.new_password_input.text if self.new_password_input else ""
-        pwc = self.confirm_password_input.text if self.confirm_password_input else ""
+        email = get_input_text(self.new_username_input)
+        pw = get_input_text(self.new_password_input)
+        pwc = get_input_text(self.confirm_password_input)
 
         if not email or not pw or not pwc:
             self.show_error("Please fill all fields")
             return
 
-        is_weak, weak_message = self.is_password_weak(pw)
-        if is_weak:
-            self.show_error(weak_message)
+        is_valid, message = validate_password_strength(pw)
+        if not is_valid:
+            self.show_error(message)
             return
 
         if pw != pwc:
@@ -125,37 +124,33 @@ class RegisterScreen(Screen):
         try:
             user = register_user(email, pw)
             if user:
-                App.get_running_app().current_user = user
-                self.manager.current = 'dashboard'
+                uid = user.get('localId')
+                id_token = user.get('idToken')
+                
+                # Create Firestore document for new user
+                success = create_user_document(uid, email, id_token)
+                
+                if success:
+                    app = App.get_running_app()
+                    app.current_user = user
+                    app.current_user_id = uid
+                    app.current_id_token = id_token
+                    self.manager.current = 'dashboard'
+                else:
+                    self.show_error("Failed to create user profile")
             else:
                 self.show_error("Registration failed")
         except Exception as e:
             self.show_error(f"Error: {str(e)}")
 
 
-class PasswordResetScreen(Screen):
+class PasswordResetScreen(AuthScreen):
     """Password reset screen with email verification."""
     reset_email_input = ObjectProperty(None)
 
-    def show_error(self, message):
-        """Display error notification."""
-        error_box = self.ids.error_box
-        error_message = self.ids.error_message
-        error_message.text = message
-        
-        anim = Animation(height=dp(60), duration=0.3)
-        anim.start(error_box)
-        Clock.schedule_once(self.hide_error, 4)
-    
-    def hide_error(self, dt=None):
-        """Hide error notification."""
-        error_box = self.ids.error_box
-        anim = Animation(height=0, duration=0.3)
-        anim.start(error_box)
-
     def on_reset_submit(self):
         """Handle password reset submission."""
-        email = self.reset_email_input.text if self.reset_email_input else ""
+        email = get_input_text(self.reset_email_input)
         
         if not email:
             self.show_error("Please enter your email address")
@@ -178,14 +173,12 @@ class PasswordResetScreen(Screen):
     def back_to_login(self):
         """Return to login screen."""
         self.manager.current = 'login'
-        if self.reset_email_input:
-            self.reset_email_input.text = ""
+        self.reset_email_input.text = ""
 
     def on_back_pressed(self):
         """Navigate back to login."""
         self.manager.current = 'login'
-        if self.reset_email_input:
-            self.reset_email_input.text = ""
+        self.reset_email_input.text = ""
 
 
 class DashboardScreen(Screen):
@@ -196,6 +189,8 @@ class DashboardScreen(Screen):
 class BankApp(App):
     """ArdenBank application main class."""
     current_user = None
+    current_user_id = None
+    current_id_token = None
 
     def build(self):
         return Builder.load_file('Screens/main.kv')
