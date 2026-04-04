@@ -89,7 +89,7 @@ banking-app/
 
 ---
 
-## 🔮 Planned Features
+## 🔮 Planned Features/Currently being worked on
 
 - [ ] Send money between accounts
 - [ ] Transaction history
