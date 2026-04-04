@@ -1,16 +1,22 @@
+<MenuPopup@Popup>:
+    title: 'Menu'
+    size_hint: None, None
+    size: dp(200), dp(150)
+    auto_dismiss: True
+    BoxLayout:
+        orientation: 'vertical'
+        Button:
+            text: 'Profile'
+            on_release: print("Profile"); root.dismiss()
+        Button:
+            text: 'Help/Faq'
+            on_release: print("Help/Faq"); root.dismiss()
+        Button:
+            text: 'Logout'
+            on_release: print("Logout"); root.dismiss()
+
 <DashboardScreen>:
     FloatLayout:
-
-        # 1. Bottom green gradient (Background)
-        Widget:
-            size_hint: 1, None
-            height: dp(200)
-            pos_hint: {'y': 0}
-            canvas:
-                Rectangle:
-                    pos: self.pos
-                    size: self.size
-                    source: 'Assets/GreenGradient.png'
 
         # 2. White Card Container
         BoxLayout:
@@ -49,6 +55,18 @@
                 halign: 'left'
                 valign: 'bottom'
                 padding: [dp(20), 0] # Left padding inside the label
+
+            Label:
+                id: welcome_label
+                text: 'Hello!'
+                color: 0, 0.45, 0, 1
+                font_size: dp(18)
+                size_hint_y: None
+                height: dp(30)
+                text_size: self.size
+                halign: 'left'
+                valign: 'middle'
+                padding: [dp(20), 0]
 
             # --- SUBTITLE & TOTAL BALANCE ---
             BoxLayout:
@@ -323,6 +341,38 @@
                         valign: 'top'
                         text_size: self.size
 
+        # 1. Bottom green gradient (Background)
+        Widget:
+            size_hint: 1, None
+            height: dp(120)
+            pos_hint: {'y': 0}
+            canvas:
+                Rectangle:
+                    pos: self.pos
+                    size: self.size
+                    source: 'Assets/GreenGradient.png'
+
+        # Bottom action buttons
+        BoxLayout:
+            orientation: 'horizontal'
+            size_hint: 1, None
+            height: dp(60)
+            pos_hint: {'center_x': 0.5, 'y': 0.02}
+            spacing: dp(12)
+            padding: [dp(20), 0, dp(20), 0]
+
+            Button:
+                text: 'Accounts'
+                on_release: print("Accounts")
+
+            Button:
+                text: 'Send Money'
+                on_release: print("Send Money")
+
+            Button:
+                text: 'Transfer'
+                on_release: print("Transfer")
+
         # 3. Top Gradient (Overlap effect)
         Widget:
             size_hint_y: None
@@ -333,3 +383,25 @@
                     pos: self.pos
                     size: self.size
                     source: 'Assets/GreenGradient.png'
+
+        # Hamburger menu button
+        Button:
+            id: menu_button
+            size_hint: None, None
+            size: dp(40), dp(40)
+            pos_hint: {'x': 0.02, 'top': 0.95}
+            background_normal: ''
+            background_color: 0,0,0,0
+            on_release: root.open_menu()
+            canvas.before:
+                Color:
+                    rgba: 0.2, 0.2, 0.2, 1
+                Line:
+                    points: [self.x + dp(8), self.center_y - dp(6), self.right - dp(8), self.center_y - dp(6)]
+                    width: 2
+                Line:
+                    points: [self.x + dp(8), self.center_y, self.right - dp(8), self.center_y]
+                    width: 2
+                Line:
+                    points: [self.x + dp(8), self.center_y + dp(6), self.right - dp(8), self.center_y + dp(6)]
+                    width: 2

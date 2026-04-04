@@ -1,0 +1,172 @@
+<ProfileSetupScreen>:
+    first_name_input: first_name
+    last_name_input: last_name
+    phone_input: phone
+    skip_btn: skip_btn
+    complete_btn: complete_btn
+
+    AuthBackground:
+
+    BoxLayout:
+        size_hint: None, None
+        width: dp(420)
+        height: dp(520)
+        pos_hint: {'center_x': 0.5, 'center_y': 0.48}
+        orientation: 'vertical'
+        padding: dp(20)
+        spacing: dp(12)
+
+        canvas.before:
+            Color:
+                rgba: 0, 0, 0, 0.18
+            RoundedRectangle:
+                pos: (self.x + dp(0), self.y - dp(6))
+                size: (self.width, self.height + dp(6))
+                radius: [12,]
+            Color:
+                rgba: 1, 1, 1, 0.98
+            RoundedRectangle:
+                pos: self.pos
+                size: self.size
+                radius: [10,]
+
+        Label:
+            text: 'Complete Your Profile'
+            font_size: dp(22)
+            size_hint_y: None
+            height: dp(34)
+            color: 0, 0, 0, 1
+            halign: 'left'
+            valign: 'middle'
+            text_size: self.size
+
+        Label:
+            text: 'Add your personal information (optional)'
+            font_size: dp(12)
+            color: 0.6, 0.6, 0.6, 1
+            size_hint_y: None
+            height: dp(24)
+            halign: 'left'
+            valign: 'top'
+            text_size: self.size
+
+        # First Name
+        BoxLayout:
+            orientation: 'vertical'
+            size_hint_y: None
+            height: dp(78)
+            spacing: dp(6)
+
+            Label:
+                text: 'First Name'
+                size_hint_y: None
+                height: dp(18)
+                color: 0, 0, 0, 1
+                halign: 'left'
+                valign: 'middle'
+                text_size: self.size
+                font_size: dp(12)
+
+            TextInput:
+                id: first_name
+                size_hint_y: None
+                height: dp(48)
+                multiline: False
+                hint_text: 'John'
+
+        # Last Name
+        BoxLayout:
+            orientation: 'vertical'
+            size_hint_y: None
+            height: dp(78)
+            spacing: dp(6)
+
+            Label:
+                text: 'Last Name'
+                size_hint_y: None
+                height: dp(18)
+                color: 0, 0, 0, 1
+                halign: 'left'
+                valign: 'middle'
+                text_size: self.size
+                font_size: dp(12)
+
+            TextInput:
+                id: last_name
+                size_hint_y: None
+                height: dp(48)
+                multiline: False
+                hint_text: 'Doe'
+
+        # Phone Number
+        BoxLayout:
+            orientation: 'vertical'
+            size_hint_y: None
+            height: dp(78)
+            spacing: dp(6)
+
+            Label:
+                text: 'Phone Number'
+                size_hint_y: None
+                height: dp(18)
+                color: 0, 0, 0, 1
+                halign: 'left'
+                valign: 'middle'
+                text_size: self.size
+                font_size: dp(12)
+
+            TextInput:
+                id: phone
+                size_hint_y: None
+                height: dp(48)
+                multiline: False
+                hint_text: '+1234567890'
+                input_filter: 'float'
+
+        # Error Box
+        BoxLayout:
+            id: error_box
+            size_hint_y: None
+            height: 0
+            padding: dp(10)
+            spacing: dp(10)
+
+            canvas.before:
+                Color:
+                    rgba: 1, 0.2, 0.2, 0.9
+                RoundedRectangle:
+                    pos: self.pos
+                    size: self.size
+                    radius: [8,]
+
+            Label:
+                id: error_message
+                text: ''
+                font_size: dp(12)
+                color: 1, 1, 1, 1
+                size_hint_y: 1
+                halign: 'left'
+                valign: 'middle'
+                text_size: self.size
+
+        # Buttons
+        BoxLayout:
+            spacing: dp(12)
+            size_hint_y: None
+            height: dp(50)
+
+            Button:
+                id: skip_btn
+                text: 'Skip'
+                size_hint_x: 0.4
+                background_color: 0.9, 0.9, 0.9, 1
+                color: 0, 0, 0, 1
+                on_release: app.root.get_screen('profile_setup').on_skip_pressed()
+
+            Button:
+                id: complete_btn
+                text: 'Complete'
+                size_hint_x: 0.6
+                background_color: 0, 0.45, 0, 1
+                color: 1, 1, 1, 1
+                on_release: app.root.get_screen('profile_setup').on_profile_complete()

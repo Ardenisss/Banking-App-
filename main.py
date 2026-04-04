@@ -1,4 +1,8 @@
-# main.py - ArdenBank Authentication System
+"""ArdenBank Authentication System - Main Application Module.
+
+Provides user interface for registration, login, password reset, and dashboard.
+Uses Firebase for authentication and Firestore for data persistence.
+"""
 from kivy.app import App
 from kivy.properties import ObjectProperty
 from kivy.lang import Builder
@@ -7,25 +11,23 @@ from kivy.uix.floatlayout import FloatLayout
 from kivy.animation import Animation
 from kivy.clock import Clock
 from kivy.metrics import dp
+from kivy.uix.popup import Popup
+from kivy.uix.boxlayout import BoxLayout
+from kivy.uix.button import Button
 
 from hover import HoverLabel
-from firebase_init import register_user, login_user, reset_password, create_user_document
-
+from firebase_init import register_user, login_user, reset_password, create_user_document, update_user_profile, get_user_accounts, get_user_profile
 
 
 class AuthBackground(FloatLayout):
-    """Shared background component for login and register screens."""
     pass
 
 
-# -------- Helper Functions --------
 def get_input_text(input_widget):
-    """Safely retrieve text from input widget."""
     return input_widget.text if input_widget else ""
 
 
 def validate_password_strength(password):
-    """Validate password meets security requirements."""
     if len(password) < 8:
         return False, "Password must be at least 8 characters long"
     if not any(char.isdigit() for char in password):
@@ -35,29 +37,29 @@ def validate_password_strength(password):
     return True, ""
 
 
-# -------- Base Screen Class --------
+def store_user_in_app(user_data):
+    app = App.get_running_app()
+    app.current_user = user_data
+    app.current_user_id = user_data.get('localId')
+    app.current_id_token = user_data.get('idToken')
+
+
 class AuthScreen(Screen):
-    """Base class for authentication screens with shared error handling."""
-    
     def show_error(self, message):
-        """Display error notification."""
         error_box = self.ids.error_box
         error_message = self.ids.error_message
         error_message.text = message
-        
         anim = Animation(height=dp(60), duration=0.3)
         anim.start(error_box)
         Clock.schedule_once(self.hide_error, 4)
     
     def hide_error(self, dt=None):
-        """Hide error notification."""
         error_box = self.ids.error_box
         anim = Animation(height=0, duration=0.3)
         anim.start(error_box)
 
 
 class LoginScreen(AuthScreen):
-    """User login interface with email and password validation."""
     username_input = ObjectProperty(None)
     password_input = ObjectProperty(None)
     login_btn = ObjectProperty(None)
@@ -65,26 +67,16 @@ class LoginScreen(AuthScreen):
     register_btn = ObjectProperty(None)
 
     def on_login_pressed(self):
-        """Handle login button press with Firebase authentication."""
         email = get_input_text(self.username_input)
         pw = get_input_text(self.password_input)
-        
         if not email or not pw:
             self.show_error("Please enter both email and password")
             return
-        
         try:
             response = login_user(email, pw)
-            
-            # Check if login succeeded
             if "idToken" in response:
-                user = response
-                app = App.get_running_app()
-                app.current_user = user
-                app.current_user_id = user.get('localId')
-                app.current_id_token = user.get('idToken')
+                store_user_in_app(response)
                 self.manager.current = 'dashboard'
-            # Check if there's an error in the response
             elif "error" in response:
                 error_msg = response.get("error", {}).get("message", "Invalid email or password")
                 self.show_error(error_msg)
@@ -94,16 +86,13 @@ class LoginScreen(AuthScreen):
             self.show_error(f"Error: {str(e)}")
 
     def on_forgot_pressed(self):
-        """Navigate to password reset screen."""
         self.manager.current = 'reset_password'
 
     def on_register_pressed(self):
-        """Navigate to registration screen."""
         self.manager.current = 'register'
 
 
 class RegisterScreen(AuthScreen):
-    """User registration interface with password validation."""
     new_username_input = ObjectProperty(None)
     new_password_input = ObjectProperty(None)
     confirm_password_input = ObjectProperty(None)
@@ -111,7 +100,6 @@ class RegisterScreen(AuthScreen):
     back_btn = ObjectProperty(None)
 
     def on_register_submit(self):
-        """Handle registration with validation and Firebase."""
         email = get_input_text(self.new_username_input)
         pw = get_input_text(self.new_password_input)
         pwc = get_input_text(self.confirm_password_input)
@@ -131,25 +119,16 @@ class RegisterScreen(AuthScreen):
 
         try:
             response = register_user(email, pw)
-            
-            # Check if registration succeeded
             if "idToken" in response:
-                user = response
-                uid = user.get('localId')
-                id_token = user.get('idToken')
-                
-                # Create Firestore document for new user
+                uid = response.get('localId')
+                id_token = response.get('idToken')
                 success = create_user_document(uid, email, id_token)
-                
                 if success:
-                    app = App.get_running_app()
-                    app.current_user = user
-                    app.current_user_id = uid
-                    app.current_id_token = id_token
-                    self.manager.current = 'dashboard'
+                    store_user_in_app(response)
+                    # Go to profile setup screen instead of dashboard
+                    self.manager.current = 'profile_setup'
                 else:
                     self.show_error("Failed to create user profile")
-            # Check if there's an error in the response
             elif "error" in response:
                 error_msg = response.get("error", {}).get("message", "Registration failed")
                 self.show_error(error_msg)
@@ -159,50 +138,129 @@ class RegisterScreen(AuthScreen):
             self.show_error(f"Error: {str(e)}")
 
 
+class ProfileSetupScreen(AuthScreen):
+    first_name_input = ObjectProperty(None)
+    last_name_input = ObjectProperty(None)
+    phone_input = ObjectProperty(None)
+    skip_btn = ObjectProperty(None)
+    complete_btn = ObjectProperty(None)
+
+    def on_profile_complete(self):
+        """Save profile and go to dashboard (only if something is filled in)"""
+        first_name = get_input_text(self.first_name_input)
+        last_name = get_input_text(self.last_name_input)
+        phone = get_input_text(self.phone_input)
+
+        try:
+            # Only update if at least one field has content
+            if first_name or last_name or phone:
+                app = App.get_running_app()
+                uid = app.current_user_id
+                id_token = app.current_id_token
+                
+                success = update_user_profile(uid, first_name, last_name, phone, id_token)
+                if not success:
+                    self.show_error("Failed to save profile")
+                    return
+            
+            self.manager.current = 'dashboard'
+        except Exception as e:
+            self.show_error(f"Error: {str(e)}")
+
+    def on_skip_pressed(self):
+        """Skip profile setup and go to dashboard"""
+        self.manager.current = 'dashboard'
+
+
+
+class DashboardScreen(Screen):
+    def on_enter(self):
+        try:
+            uid, id_token = getUserIDs()
+            accounts = get_user_accounts(uid, id_token)
+            profile = get_user_profile(uid, id_token)
+
+            if profile:
+                first_name = profile.get("firstName", "")
+                last_name = profile.get("lastName", "")
+                if first_name or last_name:
+                    self.ids.welcome_label.text = f"Hello, {first_name} {last_name}".strip()
+                else:
+                    self.ids.welcome_label.text = "Hello!"
+
+            if accounts:
+                checking = accounts["checking"]
+                savings = accounts["savings"]
+                total = checking + savings
+                
+                # Format as currency
+                checking_formatted = f"${checking:,.2f}"
+                savings_formatted = f"${savings:,.2f}"
+                total_formatted = f"${total:,.2f}"
+                
+                # Set the label text
+                self.ids.user_balance.text = total_formatted
+                self.ids.checking_balance.text = checking_formatted
+                self.ids.savings_balance.text = savings_formatted
+        
+        except Exception as e:
+            print(f"Error loading balances: {e}")        
+
+    def open_menu(self):
+        if not hasattr(self, 'menu_popup') or self.menu_popup is None:
+            content = BoxLayout(orientation='vertical')
+            profile_btn = Button(text='Profile', on_release=self.on_profile)
+            help_btn = Button(text='Help/Faq', on_release=self.on_help)
+            logout_btn = Button(text='Logout', on_release=self.on_logout)
+            content.add_widget(profile_btn)
+            content.add_widget(help_btn)
+            content.add_widget(logout_btn)
+            self.menu_popup = Popup(title='Menu', content=content, size_hint=(None, None), size=(dp(200), dp(150)), auto_dismiss=True)
+        self.menu_popup.open()
+
+    def on_profile(self, instance):
+        print("Profile")
+        self.menu_popup.dismiss()
+
+    def on_help(self, instance):
+        print("Help/Faq")
+        self.menu_popup.dismiss()
+
+    def on_logout(self, instance):
+        print("Logout")
+        self.menu_popup.dismiss()        
+
+
 class PasswordResetScreen(AuthScreen):
-    """Password reset screen with email verification."""
     reset_email_input = ObjectProperty(None)
 
     def on_reset_submit(self):
-        """Handle password reset submission."""
         email = get_input_text(self.reset_email_input)
-        
         if not email:
             self.show_error("Please enter your email address")
             return
-        
         if '@' not in email:
             self.show_error("Please enter a valid email address")
             return
-        
         try:
             success = reset_password(email)
             if success:
                 self.show_error("Check your email for password reset link")
-                Clock.schedule_once(lambda dt: self.back_to_login(), 2)
+                Clock.schedule_once(lambda dt: self._go_to_login(), 2)
             else:
                 self.show_error("No account found with this email")
         except Exception as e:
             self.show_error(f"Error: {str(e)}")
 
-    def back_to_login(self):
-        """Return to login screen."""
+    def _go_to_login(self):
         self.manager.current = 'login'
         self.reset_email_input.text = ""
 
     def on_back_pressed(self):
-        """Navigate back to login."""
-        self.manager.current = 'login'
-        self.reset_email_input.text = ""
-
-
-class DashboardScreen(Screen):
-    """User dashboard after successful authentication."""
-    pass
+        self._go_to_login()
 
 
 class BankApp(App):
-    """ArdenBank application main class."""
     current_user = None
     current_user_id = None
     current_id_token = None
