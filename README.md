@@ -12,7 +12,7 @@ A desktop banking application built with Python and Kivy, designed to resemble a
 <img width="1919" height="1021" alt="Screenshot 2026-04-04 130721" src="https://github.com/user-attachments/assets/f6499893-7255-44d3-9e8b-6ca7e1ddc794" />
 
 ### Sign Up
-<!-- Drag and drop your sign up screenshot here -->
+<img width="1919" height="1022" alt="Screenshot 2026-04-04 130729" src="https://github.com/user-attachments/assets/dc193a2a-c9b7-43b3-93a7-55ceca916dd6" />
 
 ### Forgot Password
 <!-- Drag and drop your forgot password screenshot here -->
