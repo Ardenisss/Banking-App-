@@ -12,13 +12,15 @@ A desktop banking application built with Python and Kivy, designed to resemble a
 <img width="1919" height="1021" alt="Screenshot 2026-04-04 130721" src="https://github.com/user-attachments/assets/f6499893-7255-44d3-9e8b-6ca7e1ddc794" />
 
 ### Sign Up
-<img width="1912" height="990" alt="Screenshot 2026-04-05 233022" src="https://github.com/user-attachments/assets/3481da58-0dbc-4143-8e82-92a82075a162" />
 
 ### Reset Password
 <img width="1919" height="1019" alt="image" src="https://github.com/user-attachments/assets/670e566f-d365-4bb7-9bdb-7f2e34a20236" />
 
-### Dashboard
-<!-- Drag and drop your dashboard screenshot here -->
+### Accounts Dashboard
+<img width="1912" height="990" alt="Screenshot 2026-04-05 233022" src="https://github.com/user-attachments/assets/3481da58-0dbc-4143-8e82-92a82075a162" />
+
+### Send Money Dashboard
+<img width="1919" height="1017" alt="image" src="https://github.com/user-attachments/assets/110fca2c-9758-44f6-9ab9-0f14694c3f70" />
 
 ---
 
