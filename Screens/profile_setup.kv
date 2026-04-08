@@ -1,7 +1,7 @@
 <ProfileSetupScreen>:
-    first_name_input: first_name
-    last_name_input: last_name
-    phone_input: phone
+    first_name_field: first_name
+    last_name_field: last_name
+    phone_field: phone
     skip_btn: skip_btn
     complete_btn: complete_btn
 
@@ -160,13 +160,19 @@
                 text: 'Skip'
                 size_hint_x: 0.4
                 background_color: 0.9, 0.9, 0.9, 1
-                color: 0, 0, 0, 1
+                color: 1, 1, 1, 1
                 on_release: app.root.get_screen('profile_setup').on_skip_pressed()
 
             Button:
                 id: complete_btn
                 text: 'Complete'
                 size_hint_x: 0.6
-                background_color: 0, 0.45, 0, 1
+                size_hint_y: None
+                height: dp(48)
+                canvas.before:
+                    Rectangle:
+                        pos: self.pos
+                        size: self.size
+                        source: 'Assets/GreenGradient.png'
                 color: 1, 1, 1, 1
                 on_release: app.root.get_screen('profile_setup').on_profile_complete()

@@ -1,12 +1,11 @@
 <RegisterScreen>:
-    new_username_input: new_username
-    new_password_input: new_password
-    confirm_password_input: confirm_password
+    signup_email: signup_email
+    signup_password: new_password
+    confirm_password: confirm_password
     submit_btn: submit_btn
     back_btn: back_btn
 
     AuthBackground:
-
     BoxLayout:
         size_hint: None, None
         width: dp(420)
@@ -40,6 +39,7 @@
             valign: 'middle'
             text_size: self.size
 
+        # Email
         BoxLayout:
             orientation: 'vertical'
             size_hint_y: None
@@ -47,7 +47,7 @@
             spacing: dp(6)
 
             Label:
-                text: 'Username'
+                text: 'Email'
                 size_hint_y: None
                 height: dp(18)
                 color: 0,0,0,1
@@ -56,152 +56,11 @@
                 text_size: self.size
 
             TextInput:
-                id: new_username
+                id: signup_email
                 size_hint_y: None
                 height: dp(48)
                 multiline: False
-
-        BoxLayout:
-            orientation: 'vertical'
-            size_hint_y: None
-            height: dp(78)
-            spacing: dp(6)
-
-            Label:
-                text: 'Password'
-                size_hint_y: None
-                height: dp(18)
-                color: 0,0,0,1
-                halign: 'left'
-                valign: 'middle'
-                text_size: self.size
-
-            TextInput:
-                id: new_password
-                size_hint_y: None
-                height: dp(48)
-                multiline: False
-                password: True
-
-        BoxLayout:
-            orientation: 'vertical'
-            size_hint_y: None
-            height: dp(78)
-            spacing: dp(6)
-
-            Label:
-                text: 'Confirm password'
-                size_hint_y: None
-                height: dp(18)
-                color: 0,0,0,1
-                halign: 'left'
-                valign: 'middle'
-                text_size: self.size
-
-            TextInput:
-                id: confirm_password
-                size_hint_y: None
-                height: dp(48)
-                multiline: False
-                password: True
-
-        BoxLayout:
-            size_hint_y: None
-            height: dp(56)
-            spacing: dp(12)
-
-            Button:
-                id: submit_btn
-                text: 'Create account'
-                size_hint_x: 0.6
-                canvas.before:
-                    Rectangle:
-                        pos: self.pos
-                        size: self.size
-                        source: 'Assets/GreenGradient.png'
-                color: 1,1,1,1
-                on_release: root.on_register_submit()
-
-            Button:
-                id: back_btn
-                text: 'Back'
-                size_hint_x: 0.4
-                on_release: root.manager.current = 'login'
-
-    BoxLayout:
-        id: error_box
-        size_hint_y: None
-        height: 0
-        pos_hint: {'x': 0, 'top': 1}
-        padding: dp(10)
-        canvas.before:
-            Color:
-                rgba: 1, 0.2, 0.2, 0.95
-            Rectangle:
-                pos: self.pos
-                size: self.size
-        
-        Label:
-            id: error_message
-            text: ''
-            color: 1, 1, 1, 1
-            halign: 'center'
-            valign: 'middle'
-            text_size: self.size
-    BoxLayout:
-        size_hint: None, None
-        width: dp(420)
-        height: dp(420)
-        pos_hint: {'center_x': 0.5, 'center_y': 0.48}
-        orientation: 'vertical'
-        padding: dp(20)
-        spacing: dp(12)
-
-        canvas.before:
-            Color:
-                rgba: 0, 0, 0, 0.18
-            RoundedRectangle:
-                pos: (self.x + dp(0), self.y - dp(6))
-                size: (self.width, self.height + dp(6))
-                radius: [12,]
-            Color:
-                rgba: 1, 1, 1, 0.98
-            RoundedRectangle:
-                pos: self.pos
-                size: self.size
-                radius: [10,]
-
-        Label:
-            text: 'Create Account'
-            font_size: dp(22)
-            size_hint_y: None
-            height: dp(34)
-            color: 0, 0, 0, 1
-            halign: 'left'
-            valign: 'middle'
-            text_size: self.size
-
-        # Username
-        BoxLayout:
-            orientation: 'vertical'
-            size_hint_y: None
-            height: dp(78)
-            spacing: dp(6)
-
-            Label:
-                text: 'Username'
-                size_hint_y: None
-                height: dp(18)
-                color: 0,0,0,1
-                halign: 'left'
-                valign: 'middle'
-                text_size: self.size
-
-            TextInput:
-                id: new_username
-                size_hint_y: None
-                height: dp(48)
-                multiline: False
+                hint_text: 'you@example.com'
 
         # Password
         BoxLayout:
