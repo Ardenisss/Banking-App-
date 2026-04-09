@@ -7,43 +7,45 @@ FIRESTORE_ROOT = f"https://firestore.googleapis.com/v1/projects/{PROJECT_ID}/dat
 
 
 def _auth_request(path, payload):
-    # Send a request to Firebase Authentication REST API.
-    # Used for sign-up, sign-in, and password reset operations.
     url = f"https://identitytoolkit.googleapis.com/v1/{path}?key={API_KEY}"
     return requests.post(url, json=payload).json()
 
 
 def _firestore_request(uid, id_token, payload=None, method="GET"):
-    # Send a GET or PATCH request to the user Firestore document.
-    # The id_token is used for Firebase authentication.
-    """Get or update the user Firestore document."""
     url = f"{FIRESTORE_ROOT}/users/{uid}"
     headers = {"Authorization": f"Bearer {id_token}"}
-    if method == "GET":
-        return requests.get(url, headers=headers)
-    return requests.patch(url, json=payload, headers=headers)
+    if method == "PATCH":
+        return requests.patch(url, json=payload, headers=headers)
+    return requests.get(url, headers=headers)
 
 
 def _get_fields(data, *keys):
-    # Walk through nested Firestore mapValue fields safely.
-    # Firestore returns deeply nested dictionaries for document fields.
-    """Traverse nested Firestore mapValue fields safely."""
     fields = data.get("fields", {})
     for key in keys:
         fields = fields.get(key, {}).get("mapValue", {}).get("fields", {})
     return fields
 
 
-def _string_value(value):
-    return {"stringValue": str(value)}
+def _string_value(text):
+    return {"stringValue": str(text)}
 
 
-def _double_value(value):
-    return {"doubleValue": float(value)}
+def _double_value(number):
+    return {"doubleValue": float(number)}
+
+
+def _map_value(fields):
+    return {"mapValue": {"fields": fields}}
+
+
+def _extract_account_values(fields):
+    return {
+        "checking": float(fields.get("checking", {}).get("doubleValue", 0.0)),
+        "savings": float(fields.get("savings", {}).get("doubleValue", 0.0)),
+    }
 
 
 def register_user(email, password):
-    # Create a new Firebase user account with email and password.
     return _auth_request("accounts:signUp", {
         "email": email,
         "password": password,
@@ -68,75 +70,95 @@ def reset_password(email):
 
 
 def create_user_document(uid, email, id_token):
-    # Create a Firestore document for a new user.
-    # This sets default checking/savings balances and an empty profile.
     payload = {
         "fields": {
             "email": _string_value(email),
             "createdAt": _string_value(datetime.now().isoformat()),
-            "accounts": {
-                "mapValue": {
-                    "fields": {
-                        "checking": _double_value(0.0),
-                        "savings": _double_value(0.0),
-                        "creditCard": _double_value(0.0),
-                    }
-                }
-            },
-            "profile": {
-                "mapValue": {
-                    "fields": {
-                        "firstName": _string_value(""),
-                        "lastName": _string_value(""),
-                        "phone": _string_value(""),
-                    }
-                }
-            },
+            "accounts": _map_value({
+                "checking": _double_value(0.0),
+                "savings": _double_value(0.0),
+                "creditCard": _double_value(0.0),
+            }),
+            "profile": _map_value({
+                "firstName": _string_value(""),
+                "lastName": _string_value(""),
+                "phone": _string_value(""),
+            }),
         }
     }
     return _firestore_request(uid, id_token, payload, method="PATCH").status_code == 200
 
 
 def get_user_accounts(uid, id_token):
-    """Return checking and savings balances."""
     response = _firestore_request(uid, id_token)
     if response.status_code != 200:
         return None
+    return _extract_account_values(_get_fields(response.json(), "accounts"))
 
-    accounts = _get_fields(response.json(), "accounts")
-    return {
-        "checking": float(accounts.get("checking", {}).get("doubleValue", 0.0)),
-        "savings": float(accounts.get("savings", {}).get("doubleValue", 0.0)),
+
+def update_user_accounts(uid, id_token, checking=None, savings=None, credit_card=None):
+    fields = {}
+    if checking is not None:
+        fields["checking"] = _double_value(checking)
+    if savings is not None:
+        fields["savings"] = _double_value(savings)
+    if credit_card is not None:
+        fields["creditCard"] = _double_value(credit_card)
+    if not fields:
+        return False
+    payload = {"fields": {"accounts": _map_value(fields)}}
+    return _firestore_request(uid, id_token, payload, method="PATCH").status_code == 200
+
+
+def get_user_by_email(email, id_token):
+    url = f"{FIRESTORE_ROOT}:runQuery"
+    headers = {"Authorization": f"Bearer {id_token}"}
+    query = {
+        "structuredQuery": {
+            "from": [{"collectionId": "users"}],
+            "where": {
+                "fieldFilter": {
+                    "field": {"fieldPath": "email"},
+                    "op": "EQUAL",
+                    "value": {"stringValue": email},
+                }
+            },
+            "limit": 1,
+        }
     }
+    response = requests.post(url, json=query, headers=headers)
+    if response.status_code != 200:
+        return None
+    for result in response.json():
+        document = result.get("document")
+        if not document:
+            continue
+        uid = document["name"].split("/")[-1]
+        return {"uid": uid, "fields": _get_fields(document)}
+    return None
 
 
 def update_user_profile(uid, first_name, last_name, phone, id_token):
-    """Save profile fields to Firestore."""
     payload = {
         "fields": {
-            "profile": {
-                "mapValue": {
-                    "fields": {
-                        "firstName": _string_value(first_name),
-                        "lastName": _string_value(last_name),
-                        "phone": _string_value(phone),
-                    }
-                }
-            }
+            "profile": _map_value({
+                "firstName": _string_value(first_name),
+                "lastName": _string_value(last_name),
+                "phone": _string_value(phone),
+            })
         }
     }
     return _firestore_request(uid, id_token, payload, method="PATCH").status_code == 200
 
 
 def get_user_profile(uid, id_token):
-    # Fetch the user's profile fields from Firestore.
     response = _firestore_request(uid, id_token)
     if response.status_code != 200:
         return None
-
     profile = _get_fields(response.json(), "profile")
     return {
         "firstName": profile.get("firstName", {}).get("stringValue", ""),
         "lastName": profile.get("lastName", {}).get("stringValue", ""),
         "phone": profile.get("phone", {}).get("stringValue", ""),
     }
+

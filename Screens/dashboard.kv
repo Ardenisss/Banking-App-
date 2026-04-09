@@ -407,6 +407,8 @@
 
 
 <SendMoneyScreen>:
+    amount_input: amount_input
+    recipient_search: recipient_search
     FloatLayout:
         BoxLayout:
             id: send_money_card
@@ -464,7 +466,7 @@
 
                     TextInput:
                         id: recipient_search
-                        hint_text: 'Search by name or email'
+                        hint_text: 'Recipient email'
                         size_hint_y: None
                         height: dp(50)
                         multiline: False
@@ -558,15 +560,13 @@
                             background_normal: ''
                             background_color: 0, 0.6, 0, 1
                             color: 1, 1, 1, 1
-                            on_release: root.on_action('Request')
-
+                            on_release: root.on_request_pressed()
                         Button:
                             text: 'Send'
                             background_normal: ''
                             background_color: 0, 0.45, 0, 1
                             color: 1, 1, 1, 1
-                            on_release: root.on_action('Send')
-
+                            on_release: root.on_send_pressed()
         Widget:
             size_hint_y: None
             height: dp(80)

@@ -8,6 +8,7 @@ from kivy.lang import Builder
 from kivy.uix.floatlayout import FloatLayout
 from kivy.uix.screenmanager import Screen
 from kivy.uix.popup import Popup
+from kivy.uix.label import Label
 from kivy.uix.boxlayout import BoxLayout
 from kivy.uix.button import Button
 from kivy.animation import Animation
@@ -24,6 +25,8 @@ from firebase_init import (
     update_user_profile,
     get_user_accounts,
     get_user_profile,
+    update_user_accounts,
+    get_user_by_email,
 )
 
 
@@ -132,8 +135,9 @@ class RegisterScreen(AuthScreen):
             if "idToken" not in response:
                 self.show_error(_extract_error(response, "Registration failed"))
                 return
-            
+
             store_user(response)
+            app = App.get_running_app()
             if create_user_document(app.user_id, email, app.token):
                 self.manager.current = "profile_setup"
             else:
@@ -244,22 +248,116 @@ class DashboardScreen(MenuScreen):
 
 
 class SendMoneyScreen(MenuScreen):
-    # Simple calculator-style screen for building transfer amounts.
+
+    amount_input = ObjectProperty(None)
+    recipient_search = ObjectProperty(None)
+
     def append_digit(self, digit):
-        current = (self.ids.amount_input.text or "$0").lstrip("$")
-        if digit == "." and "." in current:
-            return
-        self.ids.amount_input.text = f"${current if current != '0' else ''}{digit}" if digit != "." else f"${current or '0'}."
+        amount_text = (self.amount_input.text or "$0").replace("$", "")
+
+        if digit == ".":
+            if "." in amount_text:
+                return
+            if amount_text == "":
+                amount_text = "0"
+            amount_text += "."
+        elif amount_text == "0":
+            amount_text = digit
+        else:
+            amount_text += digit
+
+        self.amount_input.text = f"${amount_text}"
 
     def delete_digit(self):
-        text = self.ids.amount_input.text.lstrip("$")[:-1]
-        self.ids.amount_input.text = f"${text or '0'}"
+        amount_text = (self.amount_input.text or "$0").replace("$", "")
+
+        amount_text = amount_text[:-1]
+
+        if amount_text == "":
+            amount_text = "0"
+
+        self.amount_input.text = f"${amount_text}"
 
     def clear_amount(self):
-        self.ids.amount_input.text = "$0"
+        self.amount_input.text = "$0"
 
-    def on_action(self, action):
-        print(f"{action} pressed")
+    def show_message(self, title, message):
+        popup = Popup(
+            title=title,
+            content=Label(text=message),
+            size_hint=(None, None),
+            size=(dp(300), dp(180)),
+            auto_dismiss=True,
+        )
+        popup.open()
+
+    def error(self, message):
+        self.show_message("Error", message)
+
+    def on_send_pressed(self):
+        recipient = self.recipient_search.text.strip()
+        amount_text = (self.amount_input.text or "$0").replace("$", "")
+
+        try:
+            amount = float(amount_text)
+        except ValueError:
+            return self.error("Please enter a valid amount.")
+
+        if not recipient:
+            return self.error("Please enter the recipient's email.")
+
+        if amount <= 0:
+            return self.error("Please enter an amount greater than $0.")
+
+        app = App.get_running_app()
+
+        if recipient.lower() == app.user.get("email", "").lower():
+            return self.error("You cannot send money to yourself.")
+
+        sender_accounts = get_user_accounts(app.user_id, app.token)
+
+        if sender_accounts is None:
+            return self.error("Unable to load your account balances.")
+
+        if sender_accounts["checking"] < amount:
+            return self.error("Insufficient funds in checking.")
+
+        recipient_user = get_user_by_email(recipient, app.token)
+
+        if recipient_user is None:
+            return self.error("Recipient not found. Use their registered email.")
+
+        recipient_uid = recipient_user["uid"]
+
+        recipient_accounts = get_user_accounts(recipient_uid, app.token)
+
+        if recipient_accounts is None:
+            return self.error("Unable to load recipient account.")
+
+        sender_update = update_user_accounts(
+            app.user_id,
+            app.token,
+            checking=sender_accounts["checking"] - amount,
+        )
+
+        recipient_update = update_user_accounts(
+            recipient_uid,
+            app.token,
+            checking=recipient_accounts["checking"] + amount,
+        )
+
+        if not sender_update or not recipient_update:
+            return self.error("Transfer failed. Please try again.")
+
+        self.amount_input.text = "$0"
+        self.recipient_search.text = ""
+        self.recipient_search.focus = False
+
+        self.show_message("Success", f"Sent ${amount:.2f} to {recipient}.")
+
+    def on_request_pressed(self):
+        self.show_message("Request", "Money request support is coming soon.")
+
 
 
 class PasswordResetScreen(AuthScreen):
