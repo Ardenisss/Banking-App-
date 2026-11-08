@@ -2,7 +2,7 @@
 import requests
 from datetime import datetime
 
-API_KEY = "YOUR_FIREBASE_API_KEY"
+API_KEY = AIzaSyBibUysdkGMVAdVbU6z9ovdMMlToEq0D0o
 PROJECT_ID = "bank-login-det"
 FIRESTORE_ROOT = f"https://firestore.googleapis.com/v1/projects/{PROJECT_ID}/databases/(default)/documents"
 
